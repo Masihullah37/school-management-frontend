@@ -23,7 +23,7 @@ jobs:
     
     - name: Create production .env
       run: |
-        echo "VITE_API_URL=https://schoolproject.fr" > .env.production
+        echo "VITE_API_URL=https://schoolproject.fr/api" > .env.production
     
     - name: Build for production
       run: npm run build
