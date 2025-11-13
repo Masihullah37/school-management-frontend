@@ -120,7 +120,7 @@ const AdminDashboard = () => {
               <TrendingUp className="h-8 w-8 text-green-600" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900">Statistiques détaillées</h3>
+              <h3 className="text-lg font-bold text-gray-900">Statistiques détaillé</h3>
               <p className="text-sm text-gray-600">Voir les rapports et analyses</p>
             </div>
           </div>
