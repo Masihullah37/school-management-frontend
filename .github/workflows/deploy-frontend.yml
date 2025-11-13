@@ -36,5 +36,5 @@ jobs:
         key: ${{ secrets.HOSTINGER_SSH_KEY }}
         port: ${{ secrets.HOSTINGER_SSH_PORT }}
         source: "dist/*"
-        target: "/home/${{ secrets.HOSTINGER_SSH_USER }}/public_html/"
+        target: "/home/${{ secrets.HOSTINGER_SSH_USER }}/domains/schoolproject.fr/public_html/"
         strip_components: 1
