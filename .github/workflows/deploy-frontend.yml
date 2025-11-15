@@ -1,40 +1,122 @@
-name: Deploy Frontend to Hostinger
+# ============================================================================
+# Workflow: Construction et Déploiement du Frontend React
+# Description: Compile l'application React avec Vite et déploie sur Hostinger
+# Déclencheur: Push sur la branche main
+# ============================================================================
+name: Build and Deploy Frontend
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main ]        # Déclenché automatiquement lors du push sur main
+  workflow_dispatch:          # Permet également le déclenchement manuel
 
+# ============================================================================
+# JOBS: Deux étapes distinctes - Build puis Deploy
+# ============================================================================
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  
+  # ==========================================================================
+  # ÉTAPE 1: BUILD - Construction de l'application React
+  # Objectif: Compiler le code source React en fichiers statiques optimisés
+  # ==========================================================================
+  build:
+    name: 🔨 Construction du Frontend
+    runs-on: ubuntu-latest    # Utilise une machine virtuelle Ubuntu
     
     steps:
-    - name: Checkout code
+    # ------------------------------------------------------------------------
+    # Récupération du code source depuis le dépôt GitHub
+    # ------------------------------------------------------------------------
+    - name: 📥 Récupération du code source
       uses: actions/checkout@v3
     
-    - name: Setup Node.js
+    # ------------------------------------------------------------------------
+    # Installation de Node.js 18 (version LTS)
+    # Nécessaire pour exécuter npm et compiler React avec Vite
+    # ------------------------------------------------------------------------
+    - name: ⚙️ Configuration de Node.js 18
       uses: actions/setup-node@v3
       with:
-        node-version: '18'
-        cache: 'npm'
+        node-version: '18'    # Version Long Term Support
+        cache: 'npm'          # Active la mise en cache des dépendances npm
     
-    - name: Install dependencies
+    # ------------------------------------------------------------------------
+    # Installation des dépendances npm du projet
+    # npm ci: Installation propre basée sur package-lock.json (plus fiable)
+    # ------------------------------------------------------------------------
+    - name: 📦 Installation des dépendances
       run: npm ci
     
-    - name: Create production .env
+    # ------------------------------------------------------------------------
+    # Création du fichier de configuration pour la production
+    # Définit l'URL de l'API backend pour l'environnement de production
+    # ------------------------------------------------------------------------
+    - name: 📝 Création du fichier .env de production
       run: |
         echo "VITE_API_URL=https://schoolproject.fr/api" > .env.production
     
-    - name: Build for production
+    # ------------------------------------------------------------------------
+    # Compilation de l'application React avec Vite
+    # Génère les fichiers statiques optimisés dans le dossier dist/
+    # Minification, tree-shaking, et optimisation des assets
+    # ------------------------------------------------------------------------
+    - name: 🏗️ Compilation de l'application pour production
       run: npm run build
     
-    - name: Deploy to Hostinger
+    # ------------------------------------------------------------------------
+    # Sauvegarde des fichiers compilés comme artefact
+    # Permet de transférer le build entre les jobs (build → deploy)
+    # Conservé pendant 1 jour (suffisant pour le déploiement)
+    # ------------------------------------------------------------------------
+    - name: 📤 Sauvegarde de l'artefact de build
+      uses: actions/upload-artifact@v3
+      with:
+        name: frontend-build   # Nom de l'artefact
+        path: dist/            # Dossier contenant les fichiers compilés
+        retention-days: 1      # Durée de conservation (1 jour)
+
+  # ==========================================================================
+  # ÉTAPE 2: DEPLOY - Déploiement sur le serveur Hostinger
+  # Objectif: Transférer les fichiers compilés vers le serveur web
+  # ==========================================================================
+  deploy:
+    name: 🚀 Déploiement sur Hostinger
+    runs-on: ubuntu-latest
+    needs: build              # Attend la fin du job "build" avant de commencer
+    
+    
+    steps:
+    # ------------------------------------------------------------------------
+    # Récupération de l'artefact créé lors de l'étape de build
+    # ------------------------------------------------------------------------
+    - name: 📥 Téléchargement de l'artefact de build
+      uses: actions/download-artifact@v3
+      with:
+        name: frontend-build   # Nom de l'artefact à télécharger
+    
+    # ------------------------------------------------------------------------
+    # Transfert des fichiers vers Hostinger via SCP (Secure Copy Protocol)
+    # Utilise les secrets GitHub pour l'authentification SSH sécurisée
+    # strip_components: 1 retire le dossier parent (dist/) lors de la copie
+    # ------------------------------------------------------------------------
+    - name: 📤 Transfert des fichiers vers Hostinger
       uses: appleboy/scp-action@master
       with:
-        host: ${{ secrets.HOSTINGER_SSH_HOST }}
-        username: ${{ secrets.HOSTINGER_SSH_USER }}
-        key: ${{ secrets.HOSTINGER_SSH_KEY }}
-        port: ${{ secrets.HOSTINGER_SSH_PORT }}
-        source: "dist/*"
+        host: ${{ secrets.HOSTINGER_SSH_HOST }}        # Adresse IP du serveur
+        username: ${{ secrets.HOSTINGER_SSH_USER }}    # Nom d'utilisateur SSH
+        key: ${{ secrets.HOSTINGER_SSH_KEY }}          # Clé privée SSH
+        port: ${{ secrets.HOSTINGER_SSH_PORT }}        # Port SSH (65002)
+        source: "*"                                    # Tous les fichiers du dossier dist/
         target: "/home/${{ secrets.HOSTINGER_SSH_USER }}/domains/schoolproject.fr/public_html/"
-        strip_components: 1
+        strip_components: 0                            # Ne pas retirer de niveau de dossier
+    
+    # ------------------------------------------------------------------------
+    # Notification de succès du déploiement
+    # ------------------------------------------------------------------------
+    - name: ✅ Déploiement terminé avec succès
+      run: |
+        echo "🎉 Frontend déployé avec succès sur https://schoolproject.fr"
+        echo "📊 Statistiques du build:"
+        echo "  - Plateforme: Hostinger"
+        echo "  - Domaine: schoolproject.fr"
+        echo "  - Date: $(date)"

@@ -1,57 +1,5 @@
 
 
-// import axios from 'axios';
-
-// const api = axios.create({
-//   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
-//   withCredentials: true,
-//   headers: {
-//     'Accept': 'application/json',
-//     'Content-Type': 'application/json',
-//     'X-Requested-With': 'XMLHttpRequest',
-//   }
-// });
-
-// api.defaults.xsrfCookieName = 'XSRF-TOKEN';
-// api.defaults.xsrfHeaderName = 'X-XSRF-TOKEN';
-
-// // In your axios.js file, update getCsrfToken
-// export const getCsrfToken = async () => {
-//   try {
-//     await api.get('/sanctum/csrf-cookie');
-//     console.log('CSRF token set successfully');
-    
-//     // Debug: Check if cookies are actually set
-//     const cookies = document.cookie.split(';');
-//     const xsrfCookie = cookies.find(cookie => cookie.trim().startsWith('XSRF-TOKEN='));
-//     const laravelCookie = cookies.find(cookie => cookie.trim().startsWith('laravel_session='));
-    
-//     console.log('XSRF-TOKEN present:', !!xsrfCookie);
-//     console.log('laravel_session present:', !!laravelCookie);
-//     console.log('All cookies:', document.cookie);
-    
-//   } catch (error) {
-//     console.error('CSRF token setup failed:', error);
-//   }
-// };
-
-// // Auto CSRF token handling for mutations
-// api.interceptors.request.use(async (config) => {
-//   if (['post', 'put', 'patch', 'delete'].includes(config.method?.toLowerCase())) {
-//     const hasToken = document.cookie.split(';').some(cookie => 
-//       cookie.trim().startsWith('XSRF-TOKEN=')
-//     );
-    
-//     if (!hasToken) {
-//       console.log('No CSRF token found, fetching one...');
-//       await getCsrfToken();
-//     }
-//   }
-//   return config;
-// });
-
-// export default api;
-
 import axios from 'axios';
 
 const api = axios.create({
@@ -79,22 +27,7 @@ export const getCsrfToken = async () => {
 
   if (csrfPromise) return csrfPromise;
   
-  // csrfPromise = (async () => {
-  //   try {
-  //     const response = await api.get('/sanctum/csrf-cookie');
-  //     console.log('✅ CSRF token set successfully');
-      
-  //     // Wait a bit for cookie to be set
-  //     await new Promise(resolve => setTimeout(resolve, 100));
-      
-  //     return response;
-  //   } catch (error) {
-  //     console.error('❌ CSRF token setup failed:', error.response?.status);
-  //     throw error;
-  //   } finally {
-  //     csrfPromise = null;
-  //   }
-  // })();
+
   csrfPromise = (async () => {
     try {
       await api.get('/sanctum/csrf-cookie');
