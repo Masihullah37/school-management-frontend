@@ -69,7 +69,7 @@ jobs:
     # Conservé pendant 1 jour (suffisant pour le déploiement)
     # ------------------------------------------------------------------------
     - name: 📤 Sauvegarde de l'artefact de build
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: frontend-build   # Nom de l'artefact
         path: dist/            # Dossier contenant les fichiers compilés
@@ -90,7 +90,7 @@ jobs:
     # Récupération de l'artefact créé lors de l'étape de build
     # ------------------------------------------------------------------------
     - name: 📥 Téléchargement de l'artefact de build
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: frontend-build   # Nom de l'artefact à télécharger
     
